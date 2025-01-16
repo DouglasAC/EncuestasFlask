@@ -1,0 +1,16 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+    color: #333;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.btn-lg {
+    padding: 15px 30px;
+    font-size: 1.2em;
+}

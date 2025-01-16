@@ -1,0 +1,30 @@
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+instance/
+.env
+
+# Dependencias
+venv/
+*.egg-info/
+
+# Archivos de configuración del IDE
+.vscode/
+.idea/
+*.iml
+
+# Archivos de logs y caché
+*.log
+*.swp
+*.swo
+
+# Migraciones de Flask-Migrate (si deseas ignorarlas)
+migrations/
+
+# Archivos estáticos generados
+app/static/*.map
+
+# Configuración específica del sistema
+.DS_Store
+Thumbs.db

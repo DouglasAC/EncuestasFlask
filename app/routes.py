@@ -1,8 +1,8 @@
-from flask import render_template, flash, redirect, request, url_for
+from flask import render_template, flash, redirect, url_for
 from app import app, db
 from app.models import Usuario, Encuesta
-from flask_login import login_user, logout_user, login_required
-from app.forms import RegistrationForm
+from flask_login import login_user, logout_user, login_required, current_user
+from app.forms import RegistrationForm, LoginForm
 
 @app.route('/')
 def index():
@@ -11,16 +11,20 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        usuario = Usuario.query.filter_by(username=username).first()
-        if usuario and usuario.password == password:
-            login_user(usuario)
-            return redirect(url_for('index'))
-        else:
-            flash('Usuario o contraseña incorrectos')
-    return render_template('login.html')
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = Usuario.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('⚠️ Nombre de usuario o contraseña inválidos', 'danger')
+            return render_template('login.html', form=form)
+        
+        login_user(user, remember=form.remember.data)
+        return redirect(url_for('index'))
+
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 @login_required
@@ -55,3 +59,7 @@ def register():
 def nueva_encuesta():
     return render_template('nueva_encuesta.html')
 
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    pass

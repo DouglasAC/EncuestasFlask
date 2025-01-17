@@ -2,6 +2,7 @@ from flask import render_template, flash, redirect, request, url_for
 from app import app, db
 from app.models import Usuario, Encuesta
 from flask_login import login_user, logout_user, login_required
+from app.forms import RegistrationForm
 
 @app.route('/')
 def index():
@@ -29,7 +30,25 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    pass
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        existing_user = Usuario.query.filter_by(username=form.username.data).first()
+        if existing_user:
+            flash('⚠️ El nombre de usuario ya está en uso', 'danger')
+            return render_template('register.html', form=form)
+        
+        existing_email = Usuario.query.filter_by(email=form.email.data).first()
+        if existing_email:
+            flash('⚠️ El correo electrónico ya está en uso', 'danger')
+            return render_template('register.html', form=form)
+        
+        user = Usuario(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('✅ ¡Registro exitoso! Ahora puedes iniciar sesión.', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form)
 
 @app.route('/encuesta/nueva', methods=['GET', 'POST'])
 @login_required

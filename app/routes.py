@@ -6,8 +6,7 @@ from app.forms import RegistrationForm, LoginForm, EncuestaForm
 
 @app.route('/')
 def index():
-    encuestas = Encuesta.query.all()
-    return render_template('index.html', encuestas=encuestas)
+    return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

@@ -5,8 +5,16 @@
 {% block content %}
 <div class="container mt-4">
     <h2>📋 Encuestas Disponibles</h2>
+
+    <form method="GET" action="{{ url_for('listar_encuestas') }}" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Buscar encuesta..." value="{{ search_query }}">
+            <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+        </div>
+    </form>
+
     <div class="list-group mt-3">
-        {% for encuesta in encuestas %}
+        {% for encuesta in encuestas.items %}
             <a href="{{ url_for('ver_encuesta', encuesta_id=encuesta.id) }}" class="list-group-item list-group-item-action">
                 <h5 class="mb-1">{{ encuesta.titulo }}</h5>
                 <p class="mb-1">{{ encuesta.descripcion }}</p>
@@ -16,5 +24,32 @@
             <p class="text-muted">No hay encuestas creadas aún.</p>
         {% endfor %}
     </div>
+
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if encuestas.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('listar_encuestas', page=encuestas.prev_num, q=search_query) }}">⬅ Anterior</a>
+                </li>
+            {% endif %}
+
+            {% for num in encuestas.iter_pages() %}
+                {% if num %}
+                    <li class="page-item {% if num == encuestas.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('listar_encuestas', page=num, q=search_query) }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if encuestas.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('listar_encuestas', page=encuestas.next_num, q=search_query) }}">Siguiente ➡</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+
 </div>
 {% endblock %}

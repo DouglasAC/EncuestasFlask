@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.models import Usuario, Encuesta, Pregunta
 from flask_login import login_user, logout_user, login_required, current_user
@@ -90,8 +90,16 @@ def crear_encuesta():
 
 @app.route('/encuestas')
 def listar_encuestas():
-    encuestas = Encuesta.query.all()
-    return render_template('listar_encuestas.html', encuestas=encuestas)
+    page = request.args.get('page', 1, type=int)
+    serch_query = request.args.get('q', '', type=str)
+
+    if serch_query:
+        encuestas = Encuesta.query.filter(Encuesta.titulo.ilike(f'%{serch_query}%'))
+    else:
+        encuestas = Encuesta.query
+
+    encuestas = encuestas.paginate(page=page, per_page=5, error_out=False)
+    return render_template('listar_encuestas.html', encuestas=encuestas, serch_query=serch_query)
 
 
 @app.route('/encuesta/<int:encuesta_id>')

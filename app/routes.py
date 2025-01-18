@@ -87,3 +87,16 @@ def crear_encuesta():
     else:
         print(form.errors)
     return render_template('crear_encuesta.html', form=form)
+
+@app.route('/encuestas')
+def listar_encuestas():
+    encuestas = Encuesta.query.all()
+    return render_template('listar_encuestas.html', encuestas=encuestas)
+
+
+@app.route('/encuesta/<int:encuesta_id>')
+def ver_encuesta(encuesta_id):
+    encuesta = Encuesta.query.get_or_404(encuesta_id)  # Obtener encuesta o mostrar error 404
+    preguntas = Pregunta.query.filter_by(encuesta_id=encuesta_id).all()
+    print(preguntas)
+    return render_template('ver_encuesta.html', encuesta=encuesta, preguntas=preguntas)

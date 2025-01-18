@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Encuestas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📋 Encuestas Disponibles</h2>
+    <div class="list-group mt-3">
+        {% for encuesta in encuestas %}
+            <a href="{{ url_for('ver_encuesta', encuesta_id=encuesta.id) }}" class="list-group-item list-group-item-action">
+                <h5 class="mb-1">{{ encuesta.titulo }}</h5>
+                <p class="mb-1">{{ encuesta.descripcion }}</p>
+                <small>Creado el: {{ encuesta.fecha_creacion.strftime('%d/%m/%Y') }}</small>
+            </a>
+        {% else %}
+            <p class="text-muted">No hay encuestas creadas aún.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,8 +1,8 @@
 from flask import render_template, flash, redirect, url_for
 from app import app, db
-from app.models import Usuario, Encuesta
+from app.models import Usuario, Encuesta, Pregunta
 from flask_login import login_user, logout_user, login_required, current_user
-from app.forms import RegistrationForm, LoginForm
+from app.forms import RegistrationForm, LoginForm, EncuestaForm
 
 @app.route('/')
 def index():
@@ -63,3 +63,27 @@ def nueva_encuesta():
 @login_required
 def dashboard():
     pass
+
+@app.route('/crear_encuesta', methods=['GET', 'POST'])
+@login_required
+def crear_encuesta():
+    form = EncuestaForm()
+    if form.validate_on_submit():
+        encuesta = Encuesta(
+            titulo=form.titulo.data, 
+            descripcion=form.descripcion.data, 
+            usuario_id=current_user.id)
+        db.session.add(encuesta)
+        db.session.commit()
+
+        for pregunta_form in form.preguntas.data:
+            pregunta = Pregunta(texto=pregunta_form['texto'], encuesta_id=encuesta.id)
+            db.session.add(pregunta)
+
+        db.session.commit()
+
+        flash('✅ Encuesta creada exitosamente', 'success')
+        return redirect(url_for('index'))
+    else:
+        print(form.errors)
+    return render_template('crear_encuesta.html', form=form)

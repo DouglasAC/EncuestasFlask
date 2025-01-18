@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Encuesta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📝 Crear Nueva Encuesta</h2>
+    
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+            {{ form.titulo.label(class="form-label") }}
+            {{ form.titulo(class="form-control", placeholder="Título de la encuesta") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.descripcion.label(class="form-label") }}
+            {{ form.descripcion(class="form-control", placeholder="Descripción opcional") }}
+        </div>
+
+        <h4>Preguntas:</h4>
+        <div id="preguntas">
+            {% for subfield in form.preguntas %}
+                <div class="mb-3 pregunta d-flex align-items-center">
+                    {{ subfield.hidden_tag() }}  <!-- Agregar CSRF para cada subformulario -->
+                    {{ subfield.texto.label(class="form-label me-2") }}
+                    {{ subfield.texto(class="form-control", placeholder="Escribe una pregunta") }}
+                    <button type="button" class="btn btn-danger ms-2 remove-question">🗑️</button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" id="addPregunta" class="btn btn-success mt-3">+ Agregar Pregunta</button>
+
+        <button type="submit" class="btn btn-primary mt-3">Crear Encuesta</button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mt-3">Cancelar</a>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let preguntasDiv = document.getElementById("preguntas");
+        let addPreguntaBtn = document.getElementById("addPregunta");
+        let preguntaIndex = {{ form.preguntas | length }};  // Índice basado en la cantidad inicial de preguntas
+
+        // Agregar nueva pregunta dinámicamente
+        addPreguntaBtn.addEventListener("click", function () {
+            let preguntaHTML = `
+                <div class="mb-3 pregunta d-flex align-items-center">
+                    <input type="hidden" name="preguntas-${preguntaIndex}-csrf_token" value="${csrfToken}">
+                    <input class="form-control" type="text" name="preguntas-${preguntaIndex}-texto" id="preguntas-${preguntaIndex}-texto" placeholder="Escribe una pregunta">
+                    <button type="button" class="btn btn-danger ms-2 remove-question">🗑️</button>
+                </div>`;
+            preguntasDiv.insertAdjacentHTML('beforeend', preguntaHTML);
+            preguntaIndex++;
+        });
+
+        // Delegar evento para eliminar preguntas dinámicamente
+        preguntasDiv.addEventListener("click", function (event) {
+            if (event.target.classList.contains("remove-question")) {
+                event.target.parentElement.remove();
+            }
+        });
+    });
+</script>
+{% endblock %}

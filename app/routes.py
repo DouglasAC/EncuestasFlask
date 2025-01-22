@@ -63,7 +63,12 @@ def nueva_encuesta():
 def dashboard():
     encuestas_creadas = Encuesta.query.filter_by(usuario_id=current_user.id).all()
 
-    encuestas_respondidas_ids = db.session.query(Respuesta.encuesta_id).filter_by(usuario_id=current_user.id).distinct()
+    encuestas_respondidas_ids = (
+        db.session.query(Pregunta.encuesta_id)
+        .join(Respuesta, Respuesta.pregunta_id == Pregunta.id)
+        .filter(Respuesta.usuario_id == current_user.id)
+        .distinct()
+    )
     encuestas_respondidas = Encuesta.query.filter(Encuesta.id.in_(encuestas_respondidas_ids)).all()
 
     encuestas_disponibles = Encuesta.query.filter(Encuesta.id.notin_([e.id for e in encuestas_respondidas])).all()
@@ -171,7 +176,9 @@ def resultados_encuesta(encuesta_id):
         return redirect(url_for('dashboard'))
 
     page = request.args.get('page', 1, type=int)
-    respuestas_paginadas = Respuesta.query.filter_by(encuesta_id=encuesta_id).paginate(page=page, per_page=5, error_out=False)
+    respuestas_paginadas = Respuesta.query.filter_by(
+        Respuesta.pregunta_id.in_([p.id for p in preguntas])
+    ).paginate(page=page, per_page=5, error_out=False)
     respuestas_por_usuario = {}
 
     for respuesta in respuestas_paginadas.items:
@@ -188,4 +195,17 @@ def resultados_encuesta(encuesta_id):
 @app.route('/encuesta/<int:encuesta_id>/eliminar', methods=['POST'])
 @login_required
 def eliminar_encuesta(encuesta_id):
-    pass
+    encuesta = Encuesta.query.get_or_404(encuesta_id)
+    if current_user.id != encuesta.usuario_id:
+        flash('⚠️ No tienes permiso para eliminar esta encuesta.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    try:
+        db.session.delete(encuesta)
+        db.session.commit()
+        flash("✅ Encuesta eliminada correctamente.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"❌ Error al eliminar la encuesta: {str(e)}", "danger")
+
+    return redirect(url_for('dashboard'))

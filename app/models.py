@@ -22,10 +22,14 @@ class Encuesta(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
 
+    preguntas = db.relationship('Pregunta', backref='encuesta', cascade="all, delete-orphan")
+
 class Pregunta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     texto = db.Column(db.String(500), nullable=False)
     encuesta_id = db.Column(db.Integer, db.ForeignKey('encuesta.id'), nullable=False)
+
+    respuestas = db.relationship('Respuesta', backref='pregunta', cascade="all, delete-orphan")
 
 class Respuesta(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -35,6 +39,3 @@ class Respuesta(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
     usuario = db.relationship('Usuario', backref=db.backref('respuestas', lazy=True))
-    pregunta = db.relationship('Pregunta', backref=db.backref('respuestas', lazy=True))
-
-    encuesta_id = db.Column(db.Integer, db.ForeignKey('encuesta.id'), nullable=False) 

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Respuestas - {{ encuesta.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📊 Respuestas a "{{ encuesta.titulo }}"</h2>
+    <p><strong>Descripción:</strong> {{ encuesta.descripcion }}</p>
+
+    {% if respuestas %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    {% for pregunta in preguntas %}
+                        <th>{{ pregunta.texto }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario_id, datos in respuestas.items() %}
+                    <tr>
+                        <td>{{ datos["usuario"].username }}</td>
+                        {% for respuesta in datos.respuestas %}
+                            <td>{{ respuesta.texto }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">❌ Aún no hay respuestas para esta encuesta.</p>
+    {% endif %}
+
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mt-3">⬅ Volver al Dashboard</a>
+</div>
+
+{% if pagination.has_prev or pagination.has_next %}
+<nav aria-label="Paginación">
+    <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('resultados_encuesta', encuesta_id=encuesta.id, page=pagination.prev_num) }}">
+                    ⬅ Anterior
+                </a>
+            </li>
+        {% endif %}
+
+        {% for num in pagination.iter_pages() %}
+            {% if num %}
+                <li class="page-item {% if num == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('resultados_encuesta', encuesta_id=encuesta.id, page=num) }}">{{ num }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('resultados_encuesta', encuesta_id=encuesta.id, page=pagination.next_num) }}">
+                    Siguiente ➡
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

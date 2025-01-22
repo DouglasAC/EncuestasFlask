@@ -163,7 +163,27 @@ def ver_respuesta(encuesta_id):
 @app.route('/encuesta/<int:encuesta_id>/resultados')
 @login_required
 def resultados_encuesta(encuesta_id):
-    pass
+    encuesta = Encuesta.query.get_or_404(encuesta_id)
+    preguntas = Pregunta.query.filter_by(encuesta_id=encuesta_id).all()
+
+    if current_user.id != encuesta.usuario_id:
+        flash('⚠️ No tienes permiso para ver los resultados de esta encuesta.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    page = request.args.get('page', 1, type=int)
+    respuestas_paginadas = Respuesta.query.filter_by(encuesta_id=encuesta_id).paginate(page=page, per_page=5, error_out=False)
+    respuestas_por_usuario = {}
+
+    for respuesta in respuestas_paginadas.items:
+        if respuesta.usuario_id not in respuestas_por_usuario:
+            usuario = Usuario.query.get(respuesta.usuario_id)
+            respuestas_por_usuario[respuesta.usuario_id] = {
+                'usuario': usuario,
+                'respuestas': []
+            }
+        respuestas_por_usuario[respuesta.usuario_id]['respuestas'].append(respuesta)
+
+    return render_template('resultados_encuesta.html', encuesta=encuesta, preguntas = preguntas, respuestas=respuestas_por_usuario, pagination=respuestas_paginadas)
 
 @app.route('/encuesta/<int:encuesta_id>/eliminar', methods=['POST'])
 @login_required

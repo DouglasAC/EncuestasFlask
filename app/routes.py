@@ -112,14 +112,16 @@ def ver_encuesta(encuesta_id):
 @login_required
 def responder_encuesta(encuesta_id):
     encuesta = Encuesta.query.get_or_404(encuesta_id)
-
-    respuesta_existente = Respuesta.query.filter_by(usuario_id=current_user.id, encuesta_id=encuesta_id).first()
-    
-    if respuesta_existente:
-        flash('⚠️ Ya has respondido esta encuesta.', 'warning')
-        return redirect(url_for(f'ver_encuesta({encuesta_id})'))
-    
     preguntas = Pregunta.query.filter_by(encuesta_id=encuesta_id).all()
+    respuestas_existentes = Respuesta.query.filter_by(usuario_id=current_user.id).filter(
+        Respuesta.pregunta_id.in_([p.id for p in preguntas])
+    ).all()
+    
+    if respuestas_existentes:
+        flash('⚠️ Ya has respondido esta encuesta.', 'warning')
+        return render_template('ver_respuesta.html', encuesta=encuesta, respuestas=respuestas_existentes)
+    
+    
     form = RespuestaForm(preguntas)
     
     if form.validate_on_submit():
@@ -131,7 +133,7 @@ def responder_encuesta(encuesta_id):
             
         db.session.commit()
         flash('✅ Respuestas enviadas exitosamente', 'success')
-        return redirect(url_for('listar_encuestas'))
+        return redirect(url_for('ver_respuesta', encuesta_id=encuesta.id))
     else:
         print(form.errors)
     return render_template('responder_encuesta.html', encuesta=encuesta, preguntas=preguntas, form=form)

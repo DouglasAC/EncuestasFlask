@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Respuestas de Encuesta{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📄 Encuesta: {{ encuesta.titulo }}</h2>
+    <p><strong>Descripción:</strong> {{ encuesta.descripcion }}</p>
+
+    <h3>📋 Tus Respuestas</h3>
+    <ul class="list-group">
+        {% for respuesta in respuestas %}
+            <li class="list-group-item">
+                <strong>Pregunta:</strong> {{ respuesta.pregunta.texto }}<br>
+                <strong>Tu respuesta:</strong> {{ respuesta.texto }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary mt-3">Volver</a>
+</div>
+{% endblock %}

@@ -146,7 +146,7 @@ def responder_encuesta(encuesta_id):
         for pregunta in preguntas:
             field_name = f'pregunta_{pregunta.id}'
             respuesta_texto = getattr(form, field_name).data
-            respuesta = Respuesta(texto=respuesta_texto, pregunta_id=pregunta.id, usuario_id=current_user.id, encuesta_id=encuesta_id)
+            respuesta = Respuesta(texto=respuesta_texto, pregunta_id=pregunta.id, usuario_id=current_user.id)
             db.session.add(respuesta)
             
         db.session.commit()
@@ -160,7 +160,11 @@ def responder_encuesta(encuesta_id):
 @login_required
 def ver_respuesta(encuesta_id):
     encuesta = Encuesta.query.get_or_404(encuesta_id)
-    respuestas = Respuesta.query.filter_by(usuario_id=current_user.id, encuesta_id=encuesta_id).all()
+    preguntas = Pregunta.query.filter_by(encuesta_id=encuesta_id).all()
+    respuestas = Respuesta.query.filter(
+        Respuesta.usuario_id == current_user.id,
+        Respuesta.pregunta_id.in_([p.id for p in preguntas])
+    ).all()
     
     return render_template('ver_respuesta.html', encuesta=encuesta, respuestas=respuestas)
 
@@ -176,7 +180,7 @@ def resultados_encuesta(encuesta_id):
         return redirect(url_for('dashboard'))
 
     page = request.args.get('page', 1, type=int)
-    respuestas_paginadas = Respuesta.query.filter_by(
+    respuestas_paginadas = Respuesta.query.filter(
         Respuesta.pregunta_id.in_([p.id for p in preguntas])
     ).paginate(page=page, per_page=5, error_out=False)
     respuestas_por_usuario = {}

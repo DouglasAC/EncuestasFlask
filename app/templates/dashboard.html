@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📊 Dashboard</h2>
+
+    <!-- Resumen -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">📋 Encuestas Creadas</h5>
+                    <p class="card-text">{{ total_encuestas_creadas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">📝 Encuestas Respondidas</h5>
+                    <p class="card-text">{{ total_encuestas_respondidas }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Encuestas Creadas -->
+    <h3>📌 Tus Encuestas</h3>
+    <a href="{{ url_for('crear_encuesta') }}" class="btn btn-success mb-3">+ Crear Nueva Encuesta</a>
+    <ul class="list-group">
+        {% for encuesta in encuestas_creadas %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ encuesta.titulo }}
+                <span>
+                    <a href="{{ url_for('ver_encuesta', encuesta_id=encuesta.id) }}" class="btn btn-info btn-sm">Ver</a>
+                    <a href="{{ url_for('resultados_encuesta', encuesta_id=encuesta.id) }}" class="btn btn-warning btn-sm">Respuestas</a>
+                    <a href="{{ url_for('eliminar_encuesta', encuesta_id=encuesta.id) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                </span>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Encuestas Disponibles para Responder -->
+    <h3 class="mt-4">📄 Encuestas para Responder</h3>
+    <ul class="list-group">
+        {% for encuesta in encuestas_disponibles %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ encuesta.titulo }}
+                <a href="{{ url_for('responder_encuesta', encuesta_id=encuesta.id) }}" class="btn btn-primary btn-sm">Responder</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Encuestas Respondidas -->
+    <h3 class="mt-4">✔️ Encuestas Respondidas</h3>
+    <ul class="list-group">
+        {% for encuesta in encuestas_respondidas %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ encuesta.titulo }}
+                <a href="{{ url_for('ver_respuesta', encuesta_id=encuesta.id) }}" class="btn btn-secondary btn-sm">Ver Respuesta</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+</div>
+{% endblock %}

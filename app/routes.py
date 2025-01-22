@@ -61,7 +61,20 @@ def nueva_encuesta():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    pass
+    encuestas_creadas = Encuesta.query.filter_by(usuario_id=current_user.id).all()
+
+    encuestas_respondidas_ids = db.session.query(Respuesta.encuesta_id).filter_by(usuario_id=current_user.id).distinct()
+    encuestas_respondidas = Encuesta.query.filter(Encuesta.id.in_(encuestas_respondidas_ids)).all()
+
+    encuestas_disponibles = Encuesta.query.filter(Encuesta.id.notin_([e.id for e in encuestas_respondidas])).all()
+
+    return render_template('dashboard.html', 
+                           total_encuestas_creadas=len(encuestas_creadas),
+                           total_encuestas_respondidas=len(encuestas_respondidas),
+                           encuestas_creadas=encuestas_creadas,
+                           encuestas_respondidas=encuestas_respondidas,
+                           encuestas_disponibles=encuestas_disponibles)
+
 
 @app.route('/crear_encuesta', methods=['GET', 'POST'])
 @login_required
@@ -145,3 +158,14 @@ def ver_respuesta(encuesta_id):
     respuestas = Respuesta.query.filter_by(usuario_id=current_user.id, encuesta_id=encuesta_id).all()
     
     return render_template('ver_respuesta.html', encuesta=encuesta, respuestas=respuestas)
+
+
+@app.route('/encuesta/<int:encuesta_id>/resultados')
+@login_required
+def resultados_encuesta(encuesta_id):
+    pass
+
+@app.route('/encuesta/<int:encuesta_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_encuesta(encuesta_id):
+    pass

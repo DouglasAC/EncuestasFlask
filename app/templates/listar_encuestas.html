@@ -20,6 +20,8 @@
                 <p class="mb-1">{{ encuesta.descripcion }}</p>
                 <small>Creado el: {{ encuesta.fecha_creacion.strftime('%d/%m/%Y') }}</small>
             </a>
+            <a href="{{ url_for('responder_encuesta', encuesta_id=encuesta.id) }}" class="btn btn-primary">📝 Responder</a>
+
         {% else %}
             <p class="text-muted">No hay encuestas creadas aún.</p>
         {% endfor %}

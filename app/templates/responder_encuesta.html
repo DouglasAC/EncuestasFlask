@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📝 Responder Encuesta: {{ encuesta.titulo }}</h2>
+    <p>{{ encuesta.descripcion }}</p>
+
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        
+
+        {% for pregunta in preguntas %}
+            <div class="mb-3">
+                <label class="form-label">{{ pregunta.texto }}</label>
+                <input type="text" name="pregunta_{{ pregunta.id }}" class="form-control" required>
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-success">📩 Enviar respuestas</button>
+    </form>
+</div>
+{% endblock %}

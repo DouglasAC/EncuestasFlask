@@ -33,3 +33,8 @@ class Respuesta(db.Model):
     pregunta_id = db.Column(db.Integer, db.ForeignKey('pregunta.id'), nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+
+    usuario = db.relationship('Usuario', backref=db.backref('respuestas', lazy=True))
+    pregunta = db.relationship('Pregunta', backref=db.backref('respuestas', lazy=True))
+
+    encuesta_id = db.Column(db.Integer, db.ForeignKey('encuesta.id'), nullable=False) 

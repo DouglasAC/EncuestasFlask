@@ -1,8 +1,8 @@
 from flask import render_template, flash, redirect, url_for, request
 from app import app, db
-from app.models import Usuario, Encuesta, Pregunta
+from app.models import Usuario, Encuesta, Pregunta, Respuesta
 from flask_login import login_user, logout_user, login_required, current_user
-from app.forms import RegistrationForm, LoginForm, EncuestaForm
+from app.forms import RegistrationForm, LoginForm, EncuestaForm, RespuestaForm
 
 @app.route('/')
 def index():
@@ -105,5 +105,35 @@ def listar_encuestas():
 def ver_encuesta(encuesta_id):
     encuesta = Encuesta.query.get_or_404(encuesta_id)  # Obtener encuesta o mostrar error 404
     preguntas = Pregunta.query.filter_by(encuesta_id=encuesta_id).all()
-    print(preguntas)
+    
     return render_template('ver_encuesta.html', encuesta=encuesta, preguntas=preguntas)
+
+@app.route('/encuesta/<int:encuesta_id>/responder', methods=['GET', 'POST'])
+@login_required
+def responder_encuesta(encuesta_id):
+    encuesta = Encuesta.query.get_or_404(encuesta_id)
+
+    respuesta_existente = Respuesta.query.filter_by(usuario_id=current_user.id, encuesta_id=encuesta_id).first()
+    
+    if respuesta_existente:
+        flash('⚠️ Ya has respondido esta encuesta.', 'warning')
+        return redirect(url_for(f'ver_encuesta({encuesta_id})'))
+    
+    preguntas = Pregunta.query.filter_by(encuesta_id=encuesta_id).all()
+    form = RespuestaForm(preguntas)
+    
+    if form.validate_on_submit():
+        for pregunta in preguntas:
+            field_name = f'pregunta_{pregunta.id}'
+            respuesta_texto = getattr(form, field_name).data
+            respuesta = Respuesta(texto=respuesta_texto, pregunta_id=pregunta.id, usuario_id=current_user.id, encuesta_id=encuesta_id)
+            db.session.add(respuesta)
+            
+        db.session.commit()
+        flash('✅ Respuestas enviadas exitosamente', 'success')
+        return redirect(url_for('listar_encuestas'))
+    else:
+        print(form.errors)
+    return render_template('responder_encuesta.html', encuesta=encuesta, preguntas=preguntas, form=form)
+
+    

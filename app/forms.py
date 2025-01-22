@@ -23,3 +23,17 @@ class EncuestaForm(FlaskForm):
     descripcion = StringField('Descripción', validators=[Length(max=500)])
     preguntas = FieldList(FormField(PreguntaForm), min_entries=1)
     submit = SubmitField('Crear encuesta')
+
+class RespuestaForm(FlaskForm):
+    submit = SubmitField('Enviar respuestas')
+
+    def __init__(self, preguntas, *args, **kwargs):
+        super(RespuestaForm, self).__init__(*args, **kwargs)
+        
+        for pregunta in preguntas:
+            field_name = f'pregunta_{pregunta.id}'
+            campo = StringField(pregunta.texto, validators=[DataRequired()])
+            setattr(self.__class__, field_name, campo)
+
+        
+    

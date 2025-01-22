@@ -138,4 +138,10 @@ def responder_encuesta(encuesta_id):
         print(form.errors)
     return render_template('responder_encuesta.html', encuesta=encuesta, preguntas=preguntas, form=form)
 
+@app.route('/encuesta/<int:encuesta_id>/ver_respuesta')
+@login_required
+def ver_respuesta(encuesta_id):
+    encuesta = Encuesta.query.get_or_404(encuesta_id)
+    respuestas = Respuesta.query.filter_by(usuario_id=current_user.id, encuesta_id=encuesta_id).all()
     
+    return render_template('ver_respuesta.html', encuesta=encuesta, respuestas=respuestas)

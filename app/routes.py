@@ -181,21 +181,30 @@ def resultados_encuesta(encuesta_id):
         return redirect(url_for('dashboard'))
 
     page = request.args.get('page', 1, type=int)
-    respuestas_paginadas = Respuesta.query.filter(
+    usuarios_con_respuestas = db.session.query(Usuario).join(Respuesta).filter(
         Respuesta.pregunta_id.in_([p.id for p in preguntas])
-    ).paginate(page=page, per_page=5, error_out=False)
+    ).distinct().paginate(page=page, per_page=5, error_out=False)
+
     respuestas_por_usuario = {}
 
-    for respuesta in respuestas_paginadas.items:
-        if respuesta.usuario_id not in respuestas_por_usuario:
-            usuario = Usuario.query.get(respuesta.usuario_id)
-            respuestas_por_usuario[respuesta.usuario_id] = {
-                'usuario': usuario,
-                'respuestas': []
-            }
-        respuestas_por_usuario[respuesta.usuario_id]['respuestas'].append(respuesta)
+    for usuario in usuarios_con_respuestas.items:
+        respuestas_por_usuario[usuario.id] = {
+            'usuario': usuario,
+            'respuestas': {pregunta.id: "" for pregunta in preguntas}  # Diccionario vacío para respuestas
+        }
 
-    return render_template('resultados_encuesta.html', encuesta=encuesta, preguntas = preguntas, respuestas=respuestas_por_usuario, pagination=respuestas_paginadas)
+    respuestas = Respuesta.query.filter(
+        Respuesta.pregunta_id.in_([p.id for p in preguntas])
+    ).all()
+
+    for respuesta in respuestas:
+        
+        if respuesta.usuario_id in respuestas_por_usuario:
+            print(respuesta.usuario_id)
+            print(respuesta.texto)
+            respuestas_por_usuario[respuesta.usuario_id]['respuestas'][respuesta.pregunta_id] = respuesta.texto
+
+    return render_template('resultados_encuesta.html', encuesta=encuesta, preguntas = preguntas, respuestas=respuestas_por_usuario, pagination=usuarios_con_respuestas)
 
 @app.route('/encuesta/<int:encuesta_id>/eliminar', methods=['POST'])
 @login_required

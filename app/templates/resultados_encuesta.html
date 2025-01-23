@@ -21,8 +21,8 @@
                 {% for usuario_id, datos in respuestas.items() %}
                     <tr>
                         <td>{{ datos["usuario"].username }}</td>
-                        {% for respuesta in datos.respuestas %}
-                            <td>{{ respuesta.texto }}</td>
+                        {% for pregunta in preguntas %}
+                            <td>{{ datos.respuestas[pregunta.id] if datos.respuestas[pregunta.id] else 'No respondió' }}</td>
                         {% endfor %}
                     </tr>
                 {% endfor %}

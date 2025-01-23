@@ -1,8 +1,9 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, Response
 from app import app, db
 from app.models import Usuario, Encuesta, Pregunta, Respuesta
 from flask_login import login_user, logout_user, login_required, current_user
 from app.forms import RegistrationForm, LoginForm, EncuestaForm, RespuestaForm
+import csv
 
 @app.route('/')
 def index():
@@ -213,3 +214,26 @@ def eliminar_encuesta(encuesta_id):
         flash(f"❌ Error al eliminar la encuesta: {str(e)}", "danger")
 
     return redirect(url_for('dashboard'))
+
+@app.route('/encuesta/<int:encuesta_id>/descargar_csv')
+@login_required
+def descargar_csv(encuesta_id):
+    encuesta = Encuesta.query.get_or_404(encuesta_id)
+    preguntas = Pregunta.query.filter_by(encuesta_id=encuesta_id).all()
+    respuestas = Respuesta.query.filter(Respuesta.pregunta_id.in_([p.id for p in preguntas])).all()
+
+    preguntas_dict = {pregunta.id: pregunta.texto for pregunta in preguntas}
+
+    usuarios_ids = list(set([r.usuario_id for r in respuestas if r.usuario_id]))  # Obtener IDs únicos
+    usuarios = Usuario.query.filter(Usuario.id.in_(usuarios_ids)).all()
+    usuarios_dict = {usuario.id: usuario.username for usuario in usuarios}
+
+    print(respuestas)
+    def generar_csv():
+        yield ','.join(['Usuario', 'Pregunta', 'Respuesta', 'Fecha de Respuesta']) + '\n'
+        for respuesta in respuestas:
+            pregunta_texto = preguntas_dict.get(respuesta.pregunta_id, "Pregunta no encontrada")
+            usuario = usuarios_dict.get(respuesta.usuario_id, "Anónimo")
+            yield ','.join([usuario, pregunta_texto, respuesta.texto, respuesta.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S')]) + '\n'
+
+    return Response(generar_csv(), mimetype='text/csv', headers={"Content-Disposition": f"attachment;filename=resultados_{encuesta.id}.csv"})

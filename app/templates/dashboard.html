@@ -37,6 +37,8 @@
                     <a href="{{ url_for('ver_encuesta', encuesta_id=encuesta.id) }}" class="btn btn-info btn-sm">Ver</a>
                     <a href="{{ url_for('resultados_encuesta', encuesta_id=encuesta.id) }}" class="btn btn-warning btn-sm">Respuestas</a>
                     <a href="{{ url_for('eliminar_encuesta', encuesta_id=encuesta.id) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                    <a href="{{ url_for('descargar_csv', encuesta_id=encuesta.id) }}" class="btn btn-primary btn-sm">📂 Descargar Resultados CSV</a>
+
                 </span>
             </li>
         {% endfor %}

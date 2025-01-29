@@ -25,7 +25,7 @@ Esta es una plataforma web desarrollada con Flask que permite a los usuarios cre
 ### Pasos para instalar
 1. Clonar el repositorio:
    ```sh
-   git clone https://github.com/tu-usuario/EncuestasFlask.git
+   git clone https://github.com/DouglasAC/EncuestasFlask.git
    ```
 2. Crear y activar un entorno virtual:
    ```sh
